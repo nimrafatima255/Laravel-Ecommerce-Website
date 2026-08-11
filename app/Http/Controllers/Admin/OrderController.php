@@ -2,66 +2,40 @@
 
 namespace App\Http\Controllers\Admin;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
-
-
 class OrderController extends Controller
 {
-
-
+    /**
+     * Display all orders.
+     */
     public function index()
     {
+        $orders = Order::with('user')
+            ->latest()
+            ->get();
 
-        $orders =
-        Order::with('user')
-        ->latest()
-        ->paginate(10);
-
-
-
-        return view(
-            'admin.orders.index',
-            compact('orders')
-        );
-
+        return view('admin.orders.index', compact('orders'));
     }
 
 
-
-
-
+    /**
+     * Update order status.
+     */
     public function update(Request $request, Order $order)
     {
-
-
         $request->validate([
-
-            'status'=>'required'
-
+            'status' => 'required|in:pending,processing,shipped,delivered,cancelled',
         ]);
-
-
 
         $order->update([
-
-            'status'=>$request->status
-
+            'status' => $request->status,
         ]);
 
-
-
-        return back()
-        ->with(
-            'success',
-            'Order Status Updated'
-        );
-
-
+        return redirect()
+            ->route('admin.orders.index')
+            ->with('success', 'Order status updated successfully.');
     }
-
-
 }
